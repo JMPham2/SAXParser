@@ -154,5 +154,10 @@ buildNumber.properties
 # Avoid ignoring Maven wrapper jar file (.jar files are usually ignored)
 !/.mvn/wrapper/maven-wrapper.jar
 
+# Avoid data XML files
+actors63.xml
+casts124.xml
+mains243.xml
+
 
 # End of https://www.gitignore.io/api/java,maven,eclipse,java-web,intellij

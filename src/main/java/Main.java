@@ -165,10 +165,13 @@ public class Main {
 
             connection.setAutoCommit(false);
             System.out.println("Executing all updates");
+            int i = 1;
+            int length = query.size();
             for(String statement : query) {
                 PreparedStatement ps = connection.prepareStatement(statement);
                 ps.executeUpdate();
                 ps.close();
+                System.out.println(String.format("Executing query %d out of %d", i++, length));
             }
             connection.commit();
             System.out.println("Committing all updates");
