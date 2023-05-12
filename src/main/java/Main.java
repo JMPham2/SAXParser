@@ -1,5 +1,6 @@
 import java.io.BufferedWriter;
 import java.io.FileWriter;
+import java.io.IOException;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.util.Map;
@@ -33,6 +34,7 @@ public class Main {
         System.out.println("Parsed cast");
 
         // Build Error Message Log
+        StringBuilder errors = new StringBuilder();
 
         // Build Query
         ArrayList<String> query = new ArrayList<String>();
@@ -155,7 +157,7 @@ public class Main {
                         }
                     }
                 } else {
-                    System.out.println(String.format("Unable to find movie with id '%s'.\n", entry.getKey()));
+                    errors.append(String.format("Unable to find movie with id '%s'.\n", entry.getKey()));
                 }
             }
 
@@ -173,8 +175,16 @@ public class Main {
                 ps.close();
                 System.out.println(String.format("Executing query %d out of %d", i++, length));
             }
+            System.out.print("Committing all updates... ");
             connection.commit();
-            System.out.println("Committing all updates");
+            System.out.println("Done.");
+
+            try (FileWriter writer = new FileWriter("errors.txt");
+                 BufferedWriter bw = new BufferedWriter(writer)) {
+                 bw.write(errors.toString());
+            } catch (IOException e) {
+                System.err.format("IOException: %s%n", e);
+            }
 
             connection.close();
         } catch (Exception e){
