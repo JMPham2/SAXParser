@@ -17,22 +17,23 @@ public class Main {
     private static Map<String, List<String>> cast;
 
     public static void main(String[] args) {
-        long startTime = System.nanoTime();
-
         SAXStarParser spe = new SAXStarParser();
         // 'stars' maps star names to star information
         stars = spe.run();
+        System.out.println("Parsed stars");
 
         SAXMovieParser mpe = new SAXMovieParser();
         // 'movies' maps movie ids (from XML file) to movies
         movies = mpe.run();
+        System.out.println("Parsed movies");
 
         // 'cast' maps movie ids to star names
         SAXCastParser cpe = new SAXCastParser();
         cast = cpe.run();
+        System.out.println("Parsed cast");
 
         // Build Error Message Log
-        StringBuilder errors = new StringBuilder();
+
         // Build Query
         ArrayList<String> query = new ArrayList<String>();
 
@@ -60,6 +61,8 @@ public class Main {
                 rs.close();
             }
 
+            System.out.println("Added star statements");
+
             // Insert movies statements
             for(Entry<String, Movie> entry : movies.entrySet()) {
                 // If movie is already in database, update the mapping
@@ -83,6 +86,8 @@ public class Main {
             int currentGenreId = grs.getInt(1) + 1;
             maxGenreIdStatement.close();
             grs.close();
+
+            System.out.println("Added movie statements");
 
             // Insert genres_in_movies statements
             for(Entry<String, Movie> entry : movies.entrySet()){
@@ -109,6 +114,8 @@ public class Main {
                     rs.close();
                 }
             }
+
+            System.out.println("Added genres and genres_in_movies statements");
 
             int currentStarId = spe.getCurrentId();
             // Insert stars_in_movies statements
@@ -148,33 +155,27 @@ public class Main {
                         }
                     }
                 } else {
-                    errors.append(String.format("Unable to find movie with id '%s'.\n", entry.getKey()));
+                    System.out.println(String.format("Unable to find movie with id '%s'.\n", entry.getKey()));
                 }
             }
 
-            // Commit Statements (Rollback for now)
+            System.out.println("Added stars and stars_in_movies statements");
 
-            // Commit All The Data
-            BufferedWriter writer = new BufferedWriter(new FileWriter("xml-insert.sql"));
-            writer.write(query.toString());
-            writer.close();
+            // Execute and Commit Statements
 
             connection.setAutoCommit(false);
+            System.out.println("Executing all updates");
             for(String statement : query) {
                 PreparedStatement ps = connection.prepareStatement(statement);
                 ps.executeUpdate();
                 ps.close();
             }
             connection.commit();
+            System.out.println("Committing all updates");
 
             connection.close();
-            System.out.println(errors.toString());
         } catch (Exception e){
             e.printStackTrace();
         }
-
-        long endTime   = System.nanoTime();
-        long totalTime = endTime - startTime;
-        System.out.println("" + (totalTime/ 1000000000.0) + " seconds");
     }
 }
